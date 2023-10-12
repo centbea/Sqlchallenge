@@ -97,4 +97,70 @@ GROUP BY sales.customer_id
 
 ---
 
-[View on DB Fiddle](https://www.db-fiddle.com/f/2rM8RAnq7h5LLDTzZiRWcd/138)
+**Query #6**
+
+    With rank as (
+      SELECT S.customer_id, S.order_date, m.product_name,
+      Dense_rank () over (partition by S.customer_id order by S.order_date) as rank
+      From dannys_diner.sales s
+      Join dannys_diner.menu m
+      ON s.product_id = m.product_id
+      Join dannys_diner.members mem
+      ON mem.customer_id = s.customer_id
+      WHERE s.order_date >= mem.join_date
+      ) 
+      
+      SELECT customer_id, product_name
+      FROM rank 
+      where rank = 1;
+
+| customer_id | product_name |
+| ----------- | ------------ |
+| A           | curry        |
+| B           | sushi        |
+---
+
+**Query #7**
+
+    With rank as (
+      SELECT S.customer_id, S.order_date, m.product_name,
+      Dense_rank () over (partition by S.customer_id order by S.order_date) as rank
+      From dannys_diner.sales s
+      Join dannys_diner.menu m
+      ON s.product_id = m.product_id
+      Join dannys_diner.members mem
+      ON mem.customer_id = s.customer_id
+      WHERE s.order_date < mem.join_date
+      ) 
+      
+      SELECT customer_id, product_name
+      FROM rank 
+      where rank = 1;
+
+| customer_id | product_name |
+| ----------- | ------------ |
+| A           | sushi        |
+| A           | curry        |
+| B           | curry        |
+
+---
+**Query #8**
+
+    SELECT S.customer_id, count(s.product_id) as items, sum(m.price) as total_prejoin
+    From dannys_diner.sales s
+    Join dannys_diner.menu m
+    ON m.product_id = s.product_id
+    Join dannys_diner.members mem
+    ON s.customer_id = mem.customer_id
+    WHERE s.order_date < mem.join_date
+    Group by s.customer_id;
+
+| customer_id | items | total_prejoin |
+| ----------- | ----- | ------------- |
+| B           | 3     | 40            |
+| A           | 2     | 25            |
+
+---
+
+
+
